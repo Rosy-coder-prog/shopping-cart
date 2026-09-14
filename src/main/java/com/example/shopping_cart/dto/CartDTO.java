@@ -5,6 +5,7 @@ package com.example.shopping_cart.dto;
 public class CartDTO {
 
 //	前端送什麼，DTO 就長什麼樣
+	//前端送的 JSON 形狀跟 Entity 不一樣
 	private Integer memberID;
 	private Integer productID;
 	

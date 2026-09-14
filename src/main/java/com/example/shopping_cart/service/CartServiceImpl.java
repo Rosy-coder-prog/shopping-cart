@@ -1,5 +1,6 @@
 package com.example.shopping_cart.service;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -74,22 +75,25 @@ public class CartServiceImpl implements ICartService{
 		}
 	}
 
-//	取消購物車裡的商品
+//	刪除購物車裡的商品
 	@Override
-	public void removeFromCart(Integer memberID,Integer productID) {
+	public List<CartResponseDTO> removeFromCart(Integer memberID,Integer productID) {
 		CartId cartId=new CartId(memberID,productID);
 		Optional<Cart> checkCart = cartRepository.findById(cartId);
 //		一樣防呆，檢查購物車有沒有這個商品
 		if(!checkCart.isPresent()) {
 			throw new RuntimeException("購物車沒有此商品");
 		}
+		//刪除
 		cartRepository.deleteById(cartId);
+		//讀取最新的狀態		
+		return getCartItems(memberID);
 		
 	}
 
-//	增加 商品數量(改成指定的數量)
+//	修改商品數量(改成指定的數量)
 	@Override
-	public void updateQuantity(Integer memberID,Integer productID, Integer cartQuantity) {
+	public List<CartResponseDTO> updateQuantity(Integer memberID,Integer productID, Integer cartQuantity) {
 		CartId cartId=new CartId(memberID,productID);
 		Optional<Cart> checkCart = cartRepository.findById(cartId);
 //		先處理錯誤
@@ -102,6 +106,8 @@ public class CartServiceImpl implements ICartService{
 		 takeCart.setCartQuantity(cartQuantity);
 		
 		cartRepository.save(takeCart);
+		
+		return getCartItems(memberID);
 		
 		
 	}

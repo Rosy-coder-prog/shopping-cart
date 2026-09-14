@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.shopping_cart.dto.CartDTO;
 import com.example.shopping_cart.dto.CartResponseDTO;
-import com.example.shopping_cart.model.Cart;
+
 import com.example.shopping_cart.service.ICartService;
 import org.springframework.web.bind.annotation.PutMapping;
 
@@ -37,18 +37,20 @@ public class CartController {
 		return "加入成功";
 		
 	}
+	
 //	移除商品	DELETE	/cart/remove
 	@DeleteMapping("/remove")
-	public String removeFromCart(@RequestBody CartDTO cartDTO) {
-		iCartService.removeFromCart(cartDTO.getMemberID(), cartDTO.getProductID());
-		return "刪除成功";
+	public List<CartResponseDTO> removeFromCart(@RequestBody CartDTO cartDTO) {
+		
+		return iCartService.removeFromCart(cartDTO.getMemberID(),cartDTO.getProductID());
 	}
+	
 //	修改數量	PUT	/cart/update	
 	@PutMapping("/update")
-	public String updateQuantity(@RequestBody CartDTO cartDTO) {
-		iCartService.updateQuantity(cartDTO.getMemberID(), cartDTO.getProductID(),cartDTO.getCartQuantity());
+	public List<CartResponseDTO> updateQuantity(@RequestBody CartDTO cartDTO) {
 		
-		return ("修改成功");
+		
+		return iCartService.updateQuantity(cartDTO.getMemberID(), cartDTO.getProductID(),cartDTO.getCartQuantity());
 	}
 	
 //	查看購物車	GET	/cart/{memberID}	
@@ -60,6 +62,8 @@ public class CartController {
 	public List<CartResponseDTO> getCartItems(@PathVariable Integer memberID) {
 //		回傳的是 Cart Entity，所以需要控制回傳給前端的東西
 		return iCartService.getCartItems(memberID);
-		
+//		getCartItems → 查資料庫 + 轉換成 DTO
+//		removeFromCart → 刪除 + 呼叫 getCartItems 拿最新清單
+//		updateQuantity → 修改 + 呼叫 getCartItems 拿最新清單
 	}	
 }
