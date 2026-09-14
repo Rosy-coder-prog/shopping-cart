@@ -3,6 +3,7 @@ package com.example.shopping_cart.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -13,7 +14,7 @@ public class Member {
 
 	
 	@Id //PRIMARY KEY，一張表只有一個主鍵
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "memberID") //欄位資料對應
 	private Integer memberID;
 	//Integer 數字 12312313
@@ -24,15 +25,18 @@ public class Member {
 	@Column(name = "password")
 	private  String  password;
 	//當new出Member物件空盒子需要這個
+	@Column(name = "membername")
+	private String membername;
+	
 	public Member() {
 	
 	}
 	//建立Member空盒子可以直接對應存值
-	public Member(Integer memberID, String  mailbox, String  password){
+	public Member(Integer memberID, String  mailbox, String  password,String membername){
 		this.memberID = memberID;
 		this.mailbox = mailbox;
 		this.password = password;
-		
+		this.membername=membername;
 	}
 	//this 就是 ->我自己的物件
 	public Integer getMemberID() {
@@ -54,6 +58,12 @@ public class Member {
 	}
 	public void setPassword(String password) {
 		this.password = password;
+	}
+	public String getMembername() {
+		return membername;
+	}
+	public void setMembername(String membername) {
+		this.membername = membername;
 	}
 	
 	
