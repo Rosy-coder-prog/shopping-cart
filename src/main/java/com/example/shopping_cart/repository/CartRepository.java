@@ -18,4 +18,7 @@ public interface CartRepository extends JpaRepository<Cart,CartId> {
 	
 //	對應的是資料庫
 	public List<Cart>  findBycartIdMemberID(Integer memberID);
+	
+//	清空購物車
+	void deleteByCartIdMemberID(Integer memberID);
 }
