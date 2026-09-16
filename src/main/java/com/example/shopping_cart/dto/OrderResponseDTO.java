@@ -7,6 +7,7 @@ import java.util.List;
 public class OrderResponseDTO {
 /*	
 //	結帳回傳
+
 	訂單編號
 	總金額
 	訂單狀態

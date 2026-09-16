@@ -34,7 +34,7 @@ public class OrdersService implements IOrdersService {
 //	3. 每個商品的「庫存」要扣掉
 //	4. 結帳完購物車要「清空」
 
-	private final MemberRepository memberRepository;
+	
 
 	@Autowired
 	private CartRepository cartRepository;
@@ -48,9 +48,9 @@ public class OrdersService implements IOrdersService {
 	@Autowired
 	private OrderItemRepository orderItemRepository;
 
-	OrdersService(MemberRepository memberRepository) {
-		this.memberRepository = memberRepository;
-	}
+	@Autowired
+	private MemberRepository memberRepository;
+	
 
 	/*
 	 * 會員在不在 先檢查購物車有沒有東西 建立一筆訂單 檢查商品有沒有 商品扣庫存 把購物車商品塞進訂單明細 計算總金額 清空購物車
@@ -85,7 +85,7 @@ public class OrdersService implements IOrdersService {
 
 //			準備計算總額
 		BigDecimal totalAmount = BigDecimal.ZERO;
-//			給前端看的，建利空清單，因為商品不會只有一個
+//			給前端看的，建立空清單，因為商品不會只有一個
 		List<OrderItemResponseDTO> items = new ArrayList<>();
 
 //		購物車的東西一個一個拿出來，檢查庫存->扣庫存->建立訂單明細->計算總價格

@@ -17,6 +17,7 @@ public class OrderController {
 	@Autowired
 	private IOrdersService iOrdersService;
 
+	//結帳
 	@PostMapping("/checkout/{memberID}")
 	public OrderResponseDTO check(@PathVariable Integer memberID) {
 		return iOrdersService.checkout(memberID);
