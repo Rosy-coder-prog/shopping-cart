@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.shopping_cart.dto.MemberResponseDTO;
+import com.example.shopping_cart.exception.BusinessException;
 import com.example.shopping_cart.model.Member;
 import com.example.shopping_cart.repository.MemberRepository;
 
@@ -25,7 +26,7 @@ public class MemberService implements IMemberService {
 		Optional<Member>  result= memberRepository.findByMailbox(mailbox);
 //		存在擋掉
 		if(result.isPresent()) {
-			throw new RuntimeException("信箱已被註冊");
+			throw new BusinessException(409,"信箱已被註冊");
 		}
 		
 //		建立一個Member物件取值
@@ -33,6 +34,8 @@ public class MemberService implements IMemberService {
 		  newmember.setMailbox(mailbox);
 		  newmember.setMembername(membername);
 		  newmember.setPassword(password);
+		  //後端還是要給值
+		  newmember.setRole("user");
 		  memberRepository.save(newmember);		
 	}
 	
@@ -47,16 +50,23 @@ public class MemberService implements IMemberService {
 		Optional<Member> result = memberRepository.findByMailbox(mailbox);
 //		我直接看
 		if(!result.isPresent()) {
-			throw new RuntimeException("未註冊的信箱");
+			throw new BusinessException(401,"未註冊的信箱");
 			
 		}
+//		取出來看	
 		Member member = result.get();
-//		取出來看
+//檢查密碼
 		if(!member.getPassword().equals(password)) {
-			throw new RuntimeException("密碼錯誤");
+			throw new BusinessException(401,"密碼錯誤");
 		}
-//		傳給前端
-		return new MemberResponseDTO(member.getMemberID(),member.getMembername());
+//		檢查會員狀態
+//		if(member.getActive().equals(false))
+//		if是true成立，停權的人是false，反轉會變成true
+		if (!member.getActive()) {
+			throw new BusinessException(403,"會員已停權");
+		}
+//		傳給前端，只傳需要的值
+		return new MemberResponseDTO(member.getMemberID(),member.getMembername(),member.getRole());
 		
 	}
 

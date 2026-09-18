@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.shopping_cart.dto.OrderItemResponseDTO;
 import com.example.shopping_cart.dto.OrderResponseDTO;
+import com.example.shopping_cart.exception.BusinessException;
 import com.example.shopping_cart.model.Cart;
 import com.example.shopping_cart.model.Member;
 import com.example.shopping_cart.model.OrderItem;
@@ -53,8 +54,14 @@ public class OrdersService implements IOrdersService {
 	
 
 	/*
-	 * 會員在不在 先檢查購物車有沒有東西 建立一筆訂單 檢查商品有沒有 商品扣庫存 把購物車商品塞進訂單明細 計算總金額 清空購物車
-	 * 
+	 * 會員在不在 
+	 * 先檢查購物車有沒有東西 
+	 * 建立一筆訂單 
+	 * 檢查商品有沒有下架
+	 * 檢查商品有沒有 ->商品扣庫存 
+	 * 把購物車商品塞進訂單明細
+	 * 計算總金額 
+	 * 清空購物車
 	 */
 	@Override
 	@Transactional
@@ -62,15 +69,16 @@ public class OrdersService implements IOrdersService {
 //		先找有沒有會員
 		Optional<Member> memberesult = memberRepository.findById(memberID);
 		if (!memberesult.isPresent()) {
-			throw new RuntimeException("尚未登入會員");
+			throw new BusinessException(401,"尚未登入會員");
 		}
 //		拿出會員物件，訂單需要
 		Member member = memberesult.get();
 //		用會員找出購物車
 		List<Cart> checkcart = cartRepository.findBycartIdMemberID(memberID);
 
+		
 		if (checkcart.isEmpty()) {
-			throw new RuntimeException("購物車是空的");
+			throw new BusinessException(400,"購物車是空的");
 		}
 //		建立訂單
 //		 先建訂單，金額暫時設 0 → save → 資料庫產生 orderID
@@ -91,9 +99,12 @@ public class OrdersService implements IOrdersService {
 //		購物車的東西一個一個拿出來，檢查庫存->扣庫存->建立訂單明細->計算總價格
 		for (Cart cart : checkcart) {
 			Product product = cart.getProduct();
+			if(!product.getDeleted()) {
+				throw new BusinessException(404,product.getProductname()+"商品已下架");
+			}
 
 			if (product.getInventoryQuantity() < cart.getCartQuantity()) {
-				throw new RuntimeException(product.getProductname() + "庫存不足");
+				throw new BusinessException(404,product.getProductname() + "庫存不足");
 			}
 			product.setInventoryQuantity(product.getInventoryQuantity() - cart.getCartQuantity());
 			productRepository.save(product);
@@ -124,5 +135,5 @@ public class OrdersService implements IOrdersService {
 				neworders.getOrderTime(), items);
 
 	}
-
+	
 }

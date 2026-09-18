@@ -17,6 +17,12 @@ public class Product {
 	@Column(name = "productID")
 	private Integer productID;
 	
+/*	false → 正常商品，前台看得到
+	true ->軟刪除， 已刪除（前台看不到，但資料還在）
+	*/
+	@Column(name="deleted")
+	private Boolean deleted =false;
+	
 	@Column(name = "productname")
 	private String productname;
 	
@@ -30,6 +36,7 @@ public class Product {
 		
 	}
 	//建立新盒子可以對應到的值
+//	商品會一直保持false，除非要軟刪除才會改值
 	public Product(Integer productID,String productname,BigDecimal price,Integer inventoryQuantity) {
 		this.productID = productID;
 		this.productname =productname;
@@ -63,6 +70,13 @@ public class Product {
 	}
 	public void setInventoryQuantity(Integer inventoryQuantity) {
 		this.inventoryQuantity = inventoryQuantity;
+	}
+//	這邊是用get 不是is
+	public Boolean getDeleted() {
+		return deleted;
+	}
+	public void setDeleted(Boolean deleted) {
+		this.deleted = deleted;
 	}
 	
 	

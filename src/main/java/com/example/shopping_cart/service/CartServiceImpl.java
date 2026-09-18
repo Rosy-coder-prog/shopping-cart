@@ -1,6 +1,5 @@
 package com.example.shopping_cart.service;
 
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -9,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.shopping_cart.dto.CartResponseDTO;
+import com.example.shopping_cart.exception.BusinessException;
 import com.example.shopping_cart.model.Cart;
 import com.example.shopping_cart.model.CartId;
 import com.example.shopping_cart.model.Product;
@@ -32,22 +32,33 @@ public class CartServiceImpl implements ICartService{
 //	增加商品到購物車
 	@Override
 	public void addToCart(Integer memberID,Integer productID) {
-		/* 先查這個商品存不存在
+		/* 查這個商品存不存在
+		 * 檢查商品有沒有下架
+		 * 檢查庫存夠不夠
 		   檢查資料庫有沒有這個商品		
 		*/
 		//檢查購物車有沒有這個商品
 		//如果有-> +1 ，如果沒有->新增一筆，數量設為1
 		//存進資料庫
-		
+				
 		//商品存不存在
 		Optional<Product> result = productRepository.findById(productID);
 //		isPresent() → 找到了嗎?
 //		先把錯誤的情況處理掉
 		if(!result.isPresent()) {
-			throw new RuntimeException("商品不存在");		
+			throw new BusinessException(404,"商品不存在");		
 		}
+		
 		//從容器取得商品
 		Product takeProduct	=result.get();
+		
+		
+		if(takeProduct.getDeleted()) {
+			throw new BusinessException(400,"商品已下架");
+		}
+		if(takeProduct.getInventoryQuantity() <= 0) {
+			throw new BusinessException(400,"商品庫存不足");
+		}
 		
 		//CartId 的建構子接收的是兩個 Integer
 		//傳進來的參數當成鑰匙
@@ -78,11 +89,12 @@ public class CartServiceImpl implements ICartService{
 //	刪除購物車裡的商品
 	@Override
 	public List<CartResponseDTO> removeFromCart(Integer memberID,Integer productID) {
+		
 		CartId cartId=new CartId(memberID,productID);
 		Optional<Cart> checkCart = cartRepository.findById(cartId);
 //		一樣防呆，檢查購物車有沒有這個商品
 		if(!checkCart.isPresent()) {
-			throw new RuntimeException("購物車沒有此商品");
+			throw new BusinessException(404,"購物車沒有此商品");
 		}
 		//刪除
 		cartRepository.deleteById(cartId);
@@ -102,6 +114,17 @@ public class CartServiceImpl implements ICartService{
 		}
 		
 		Cart takeCart = checkCart.get();
+		//購物車有商品物件關聯
+		Product product = takeCart.getProduct();
+		//除錯
+		if(product.getDeleted()) {
+			throw new BusinessException(400,"商品已下架");
+		}
+		if(product.getInventoryQuantity() <= 0) {
+			throw new BusinessException(400,"商品庫存不足");
+		}
+		
+		
 //		存變數不加()，加了()變方法
 		 takeCart.setCartQuantity(cartQuantity);
 		
