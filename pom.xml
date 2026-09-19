@@ -72,6 +72,7 @@
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
 			<version>0.12.6</version>
+		<!--	編譯時用不到，只有執行時需要-->
 			<scope>runtime</scope>
 		</dependency>
 	<!--	用 Jackson 處理 JSON 的部分-->
