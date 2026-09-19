@@ -20,7 +20,7 @@ import com.example.shopping_cart.model.Product;
 import com.example.shopping_cart.service.IProductService;
 
 @RestController
-@RequestMapping("/product")
+@RequestMapping("/api/product")
 public class ProductController {
 
 	

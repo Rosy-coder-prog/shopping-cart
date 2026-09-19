@@ -11,7 +11,7 @@ import com.example.shopping_cart.dto.MemberResponseDTO;
 import com.example.shopping_cart.service.IMemberService;
 
 @RestController
-@RequestMapping("/member")
+@RequestMapping("/api/member")
 public class MemberController {
 	
 	@Autowired
