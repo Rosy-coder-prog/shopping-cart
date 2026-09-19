@@ -1,5 +1,7 @@
 package com.example.shopping_cart.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -7,15 +9,22 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
+//	Spring自己寫的class
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+		
+		http
+		.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 //		關閉CSRF 防護
-		http.csrf(csrf -> csrf.disable())
+		.csrf(csrf -> csrf.disable())
 //		   TODO 1
 //		關閉 Spring Security 內建的表單登入功能
 				.formLogin(form -> form.disable())
@@ -52,6 +61,22 @@ public class SecurityConfig {
 		return http.build();
 	}
 
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration config = new CorsConfiguration();
+//		允許哪些來源，跟你原本 WebConfig 的設定一樣
+		config.setAllowedOrigins(List.of("http://localhost:5173"));
+		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE","OPTIONS"));
+//		允許前端帶任何header，包括之後的Authorization
+		config.setAllowedHeaders(List.of("*"));
+//		允許帶cookie，refresh token 需要它
+		config.setAllowCredentials(true);
+		
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//		設定套用到所有路徑
+		source.registerCorsConfiguration("/**", config);
+		return source;
+	}
 }
 //curl -i http://localhost:8082/api/cart/1 確認是否有生效
 
@@ -76,3 +101,9 @@ public class SecurityConfig {
 //hasAnyRole("ADMIN", "STAFF")	符合其中一個角色
 //hasAuthority("ROLE_ADMIN")	比對完整權限字串，不自動補前綴
 //denyAll()	所有人都不行
+
+//-------------------------------------
+//securityFilterChain 方法裡直接呼叫了corsConfigurationSource()。
+//這在 @Configuration class 裡是安全的：Spring 會攔截這個呼叫，
+//回傳已經建立好的同一個 Bean，不會重新 new 一個。這是 @Configuration 
+//的特殊處理（叫 proxyBeanMethods），一般 class 沒有這個行為。

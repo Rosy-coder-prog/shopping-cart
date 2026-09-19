@@ -29,9 +29,9 @@ public class CartController {
 	private ICartService iCartService;
 
 	
-//	加入購物車	POST	/cart/add
+//	加入購物車	
 	@PostMapping("/add")
-//	加入購物車不需回傳
+
 	public String addToCart(@RequestBody CartDTO cartDTO){
 		iCartService.addToCart(cartDTO.getMemberID(), cartDTO.getProductID());
 		return "加入成功";
