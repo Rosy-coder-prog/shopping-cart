@@ -11,7 +11,7 @@ import com.example.shopping_cart.service.IOrdersService;
 
 
 @RestController
-@RequestMapping("/Order")
+@RequestMapping("/order")
 public class OrderController {
 	
 	@Autowired

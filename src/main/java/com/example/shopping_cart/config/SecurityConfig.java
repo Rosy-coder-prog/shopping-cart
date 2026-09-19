@@ -1,0 +1,78 @@
+package com.example.shopping_cart.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//		關閉CSRF 防護
+		http.csrf(csrf -> csrf.disable())
+//		   TODO 1
+//		關閉 Spring Security 內建的表單登入功能
+				.formLogin(form -> form.disable())
+//		   TODO 2
+//				關閉 HTTP Basic 驗證
+				.httpBasic(basic -> basic.disable())
+//		   TODO 3
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authorizeHttpRequests(auth -> auth
+
+//				   requestMatchers() 回傳的是「等待指定規則」的物件
+//				   permitAll() 意思是所有人都能存取，不用登入
+						
+//						要開放給未登入者的（permitAll）→ 要主動寫
+//						只給管理員的（hasRole）→ 要主動寫
+//						同一個路徑，不同 method 要給不同權限時，才需要加 method 區分，而且順序很重要
+//						窄的開放規則放前面，寬的限制規則放後面
+						
+						// member
+						.requestMatchers("/api/member/register", "/api/member/login").permitAll()
+						// 商品前台
+//						未登入的人可以查看商品，那規則就寫成GET可以放行
+						.requestMatchers(HttpMethod.GET, "/api/product/findall", "/api/product/{productID}").permitAll()
+						// 商品後台，** 不管路徑後面接什麼都能匹配到
+//		 hasRole：必須是指定角色才能存取，不指定method，任何method都要 ADMIN（限制的規則寫寬）
+						.requestMatchers("/api/product/add/**","/api/product/update/**","/api/product/delete/**").hasRole("ADMIN")
+						.requestMatchers("/api/admin/**").hasRole("ADMIN")
+//		.anyRequest().authenticated()上面規則都沒匹配到的所有其他請求，只要已登入就能存取，不管角色
+//		購物車和訂單不需要寫，下面程式碼自動變成「需要登入」
+						.anyRequest().authenticated()
+
+				);
+
+		return http.build();
+	}
+
+}
+//curl -i http://localhost:8082/api/cart/1 確認是否有生效
+
+//.sessionManagement(...)：設定 Session 管理
+//session：Spring 傳入的 Session 設定物件
+//.sessionCreationPolicy(...)：設定「什麼時候建立 Session」
+//SessionCreationPolicy.STATELESS：永遠不建立，也不使用
+
+//authorizeHttpRequests：授權規則的開頭
+//auth：Spring 傳入的規則清單物件
+
+
+//Security 規則裡的意思是「這一層放任何文字都可以」，它是一個萬用位置
+//Security 只比對網址的形狀，不知道 findall 是查全部、5 是查單筆。
+//它們是不是同一個功能，是之後 Spring MVC 根據你的 @GetMapping 決定
+
+//Security 只看網址形狀，所以規則要寫得夠精確，才能表達你真正的意圖
+
+//permitAll()	所有人
+//authenticated()	已登入
+//hasRole("ADMIN")	角色是 ADMIN（自動補 ROLE_ 前綴）
+//hasAnyRole("ADMIN", "STAFF")	符合其中一個角色
+//hasAuthority("ROLE_ADMIN")	比對完整權限字串，不自動補前綴
+//denyAll()	所有人都不行

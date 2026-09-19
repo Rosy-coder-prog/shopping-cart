@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 
 @RestController
-@RequestMapping("/Cart") //API 都以 /cart 開頭
+@RequestMapping("/cart") //API 都以 /cart 開頭
 public class CartController {
 	
 	@Autowired
