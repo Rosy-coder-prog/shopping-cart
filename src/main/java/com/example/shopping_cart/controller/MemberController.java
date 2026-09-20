@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.shopping_cart.dto.LoginResponseDTO;
 import com.example.shopping_cart.dto.MemberDTO;
 import com.example.shopping_cart.dto.MemberResponseDTO;
 import com.example.shopping_cart.service.IMemberService;
@@ -29,7 +30,7 @@ public class MemberController {
 //	登入會員
 
 	@PostMapping("/login")
-	public MemberResponseDTO loginMember(@RequestBody MemberDTO memberDTO) {
+	public LoginResponseDTO loginMember(@RequestBody MemberDTO memberDTO) {
 		return	iMemberService.loginMember(memberDTO.getMailbox(), memberDTO.getPassword());
 		
 	}

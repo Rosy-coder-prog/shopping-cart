@@ -1,6 +1,7 @@
 package com.example.shopping_cart.service;
 
-import com.example.shopping_cart.dto.MemberResponseDTO;
+import com.example.shopping_cart.dto.LoginResponseDTO;
+
 
 public interface IMemberService {
 
@@ -8,6 +9,6 @@ public interface IMemberService {
 //	登入會員
 	
 	void registerMember(String  mailbox,String  password,String membername);
-	//登入只輸要帳號.密碼驗證，其他資料從Member物件取得
-	MemberResponseDTO loginMember(String  mailbox,String  password);
+	//回傳token和ID.名字.角色
+	LoginResponseDTO loginMember(String  mailbox,String  password);
 }

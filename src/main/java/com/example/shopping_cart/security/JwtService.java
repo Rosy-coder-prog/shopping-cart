@@ -21,7 +21,7 @@ public class JwtService {
 	
 	private final SecretKey secretKey;
 	private final long accessTokenExpiration;
-//	屬於 class，不屬於物件
+//	static:屬於class，不屬於物件
 	private static final String CLAIM_ROLE = "role";
 	
 	public JwtService(

@@ -6,18 +6,26 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.shopping_cart.dto.LoginResponseDTO;
 import com.example.shopping_cart.dto.MemberResponseDTO;
 import com.example.shopping_cart.exception.BusinessException;
 import com.example.shopping_cart.model.Member;
 import com.example.shopping_cart.repository.MemberRepository;
+import com.example.shopping_cart.security.JwtService;
 
 @Service
 public class MemberService implements IMemberService {
 	
-
-
-	@Autowired
-	private MemberRepository memberRepository;
+//	private final注入後不能被改
+	private final MemberRepository memberRepository;
+	private final JwtService jwtService;
+	
+    public MemberService(MemberRepository memberRepository, JwtService jwtService) {
+    	this.memberRepository =memberRepository;
+    	this.jwtService =jwtService; 			
+    }
+	
+	
 //	註冊會員
 	@Override
 	public void registerMember(String mailbox, String password,String membername) {
@@ -41,7 +49,10 @@ public class MemberService implements IMemberService {
 	
 //	登入會員
 	@Override
-	public MemberResponseDTO loginMember(String mailbox, String password) {
+	public LoginResponseDTO loginMember(String mailbox, String password) {
+		
+//		驗證身分 → 產生憑證 → 包裝回應
+		
 //		先查信箱有沒有這個註冊過信箱，有就擋掉，沒有就繼續
 //		檢查密碼有沒有正確，錯誤擋掉，正確放行
 		
@@ -55,7 +66,7 @@ public class MemberService implements IMemberService {
 		}
 //		取出來看	
 		Member member = result.get();
-//檢查密碼
+//      檢查密碼
 		if(!member.getPassword().equals(password)) {
 			throw new BusinessException(401,"密碼錯誤");
 		}
@@ -65,9 +76,23 @@ public class MemberService implements IMemberService {
 		if (!member.getActive()) {
 			throw new BusinessException(403,"會員已停權");
 		}
+		
+		
+		
+//		產生token
+		String accessToken = jwtService.generateAccessToken(member.getMemberID()
+				, member.getRole());
+//		建立會員DTO
+		MemberResponseDTO memberResponseDTO = new MemberResponseDTO(member.getMemberID(),
+				member.getMembername(),member.getRole());	
+		
 //		傳給前端，只傳需要的值
-		return new MemberResponseDTO(member.getMemberID(),member.getMembername(),member.getRole());
+		return new LoginResponseDTO(accessToken,memberResponseDTO);
+				
+				
 		
 	}
+	
+
 
 }
