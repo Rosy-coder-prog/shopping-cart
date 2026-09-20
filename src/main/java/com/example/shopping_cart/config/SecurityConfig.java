@@ -9,14 +9,29 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.example.shopping_cart.security.JwtFilter;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+	
+	private final JwtFilter jwtFilter;
+	
+
+	public SecurityConfig(JwtFilter jwtFilter) {
+
+		this.jwtFilter = jwtFilter;
+	}
+	
 //	Spring自己寫的class
+//	應用程式啟動時，執行一次
+	
+
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -57,7 +72,9 @@ public class SecurityConfig {
 						.anyRequest().authenticated()
 
 				);
-
+//		把 A 插在 B 之前
+//它是 Spring Security 處理表單登入的 Filter(SecurityConfig 裡當定位點)，位置在授權檢查之前。插在它前面，就能確保順序		
+     http.addFilterBefore(jwtFilter,UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}
 
