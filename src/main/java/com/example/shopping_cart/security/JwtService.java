@@ -13,6 +13,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
+
 @Service
 public class JwtService {
 //	private 讓外界拿不到 secret
@@ -20,7 +21,8 @@ public class JwtService {
 	
 	private final SecretKey secretKey;
 	private final long accessTokenExpiration;
-//	private static final String CLAIM_ROLE = "role";
+//	屬於 class，不屬於物件
+	private static final String CLAIM_ROLE = "role";
 	
 	public JwtService(
 //	@Value("${jwt.secret}")從application.properties讀取對應的值注入進來
@@ -43,7 +45,7 @@ public class JwtService {
 //	JWT標準欄位，規格要求是字串，所以把 Integer轉成 String。之後解析回來時要再轉回Integer
 				.subject(String.valueOf(memberID))
 //				自訂欄位，放角色，JWT:payload
-				.claim("role",role)
+				.claim(CLAIM_ROLE,role)
 //				設定iat：簽發時間，JWT:payload
 				.issuedAt(now)
 //				設定exp：過期時間，JWT:payload
@@ -74,5 +76,21 @@ public class JwtService {
 				.parseSignedClaims(token)
 //				取出 payload 部分
 				.getPayload();
+		
+		
+	}
+//	parseToken 回傳的是整包 Claims，但呼叫的地方通常只要 memberID 或 role
+	public Integer getMemberID(String token) {
+//		用 Integer.valueOf(...) 轉回 Integer
+//		sub，型別是 String
+//		呼叫端可以這樣寫Integer memberID = jwtService.getMemberID(token);
+//		不用Integer memberID = Integer.valueOf(jwtService.parseToken(token).getSubject());
+		return Integer.valueOf(parseToken(token).getSubject());
+	}
+	
+	public String getRole(String token) {
+//		get("role", String.class) 取自訂欄位。第二個參數告訴 jjwt「我預期這是 String」，
+//		型別不符會拋例外。如果用沒有型別參數的 get("role")，回傳的是 Object，還要自己轉型
+		return parseToken(token).get(CLAIM_ROLE,String.class);
 	}
 }
