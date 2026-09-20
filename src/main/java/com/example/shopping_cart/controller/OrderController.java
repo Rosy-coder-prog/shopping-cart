@@ -1,6 +1,7 @@
 package com.example.shopping_cart.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,8 +19,8 @@ public class OrderController {
 	private IOrdersService iOrdersService;
 
 	//結帳
-	@PostMapping("/checkout/{memberID}")
-	public OrderResponseDTO check(@PathVariable Integer memberID) {
+	@PostMapping("/checkout")
+	public OrderResponseDTO check(@AuthenticationPrincipal Integer memberID) {
 		return iOrdersService.checkout(memberID);
 	}
 }

@@ -5,6 +5,7 @@ package com.example.shopping_cart.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,25 +33,25 @@ public class CartController {
 //	加入購物車	
 	@PostMapping("/add")
 
-	public String addToCart(@RequestBody CartDTO cartDTO){
-		iCartService.addToCart(cartDTO.getMemberID(), cartDTO.getProductID());
+	public String addToCart(@AuthenticationPrincipal Integer memberID,@RequestBody CartDTO cartDTO){
+		iCartService.addToCart(memberID, cartDTO.getProductID());
 		return "加入成功";
 		
 	}
 	
 //	移除商品	DELETE	/cart/remove
 	@DeleteMapping("/remove")
-	public List<CartResponseDTO> removeFromCart(@RequestBody CartDTO cartDTO) {
+	public List<CartResponseDTO> removeFromCart(@AuthenticationPrincipal Integer memberID,@RequestBody CartDTO cartDTO) {
 		
-		return iCartService.removeFromCart(cartDTO.getMemberID(),cartDTO.getProductID());
+		return iCartService.removeFromCart(memberID,cartDTO.getProductID());
 	}
 	
 //	修改數量	PUT	/cart/update	
 	@PutMapping("/update")
-	public List<CartResponseDTO> updateQuantity(@RequestBody CartDTO cartDTO) {
+	public List<CartResponseDTO> updateQuantity(@AuthenticationPrincipal Integer memberID,@RequestBody CartDTO cartDTO) {
 		
 		
-		return iCartService.updateQuantity(cartDTO.getMemberID(), cartDTO.getProductID(),cartDTO.getCartQuantity());
+		return iCartService.updateQuantity(memberID, cartDTO.getProductID(),cartDTO.getCartQuantity());
 	}
 	
 //	查看購物車	GET	/cart/{memberID}	
@@ -58,8 +59,8 @@ public class CartController {
 //	{memberID} → 網址裡的變數
 //	GET /cart/1
 //              ↑ 這個 1 就是 memberID
-	@GetMapping("/{memberID}")
-	public List<CartResponseDTO> getCartItems(@PathVariable Integer memberID) {
+	@GetMapping
+	public List<CartResponseDTO> getCartItems(@AuthenticationPrincipal Integer memberID) {
 //		回傳的是 Cart Entity，所以需要控制回傳給前端的東西
 		return iCartService.getCartItems(memberID);
 //		getCartItems → 查資料庫 + 轉換成 DTO
