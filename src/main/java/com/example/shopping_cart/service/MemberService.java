@@ -3,7 +3,7 @@ package com.example.shopping_cart.service;
 
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.shopping_cart.dto.LoginResponseDTO;
@@ -19,10 +19,12 @@ public class MemberService implements IMemberService {
 //	private final注入後不能被改
 	private final MemberRepository memberRepository;
 	private final JwtService jwtService;
+	private final PasswordEncoder passwordEncoder;
 	
-    public MemberService(MemberRepository memberRepository, JwtService jwtService) {
+    public MemberService(MemberRepository memberRepository, JwtService jwtService,PasswordEncoder passwordEncoder) {
     	this.memberRepository =memberRepository;
-    	this.jwtService =jwtService; 			
+    	this.jwtService =jwtService; 
+    	this.passwordEncoder=passwordEncoder;
     }
 	
 	
@@ -41,7 +43,7 @@ public class MemberService implements IMemberService {
 		  Member newmember = new Member();
 		  newmember.setMailbox(mailbox);
 		  newmember.setMembername(membername);
-		  newmember.setPassword(password);
+		  newmember.setPassword(passwordEncoder.encode(password));
 		  //後端還是要給值
 		  newmember.setRole("user");
 		  memberRepository.save(newmember);		
@@ -66,8 +68,9 @@ public class MemberService implements IMemberService {
 		}
 //		取出來看	
 		Member member = result.get();
-//      檢查密碼
-		if(!member.getPassword().equals(password)) {
+//      檢查密碼，第一個是使用者輸入的明碼，第二個是資料庫的雜湊
+//		matches 是 PasswordEncoder 介面的方法，用來比對明碼和雜湊是否相符
+		if(!passwordEncoder.matches(password, member.getPassword())) {
 			throw new BusinessException(401,"密碼錯誤");
 		}
 //		檢查會員狀態

@@ -8,6 +8,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -49,7 +51,7 @@ public class SecurityConfig {
 //		   TODO 3
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
-
+						.requestMatchers("/error").permitAll()
 //				   requestMatchers() 回傳的是「等待指定規則」的物件
 //				   permitAll() 意思是所有人都能存取，不用登入
 						
@@ -94,8 +96,14 @@ public class SecurityConfig {
 		source.registerCorsConfiguration("/**", config);
 		return source;
 	}
+	
+	@Bean
+	public PasswordEncoder passwordEncoder() { //介面
+//		PasswordEncoder 被當成回傳型別，卻沒有 new PasswordEncoder()，這是介面的典型用法
+		return new BCryptPasswordEncoder(); //實作
+	}
 }
-//curl -i http://localhost:8082/api/cart/1 確認是否有生效
+
 
 //.sessionManagement(...)：設定 Session 管理
 //session：Spring 傳入的 Session 設定物件

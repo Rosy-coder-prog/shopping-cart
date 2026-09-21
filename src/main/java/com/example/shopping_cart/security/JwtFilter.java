@@ -43,7 +43,8 @@ public class JwtFilter extends OncePerRequestFilter {
 //		前端請求標頭(Header)=伺服器傳遞使用者的身份驗證憑證.我是誰(Authorization)+Bearer持有人
 //				Bearer=	只要誰持有，伺服器就讓他授權通過
 		String authHeader = request.getHeader("Authorization");
-//		
+//		除錯，不該出現
+//		logger.info("收到 Authorization：" + (authHeader == null ? "null" : authHeader.substring(0, Math.min(30, authHeader.length()))));
 		if(authHeader == null || !authHeader.startsWith("Bearer ")) {
 //		在請求還沒到達目的地（Controller/API 門口）之前攔下它
 //			放行請求
@@ -72,6 +73,7 @@ public class JwtFilter extends OncePerRequestFilter {
 			
 		}catch(JwtException e){
 //			包含簽章錯誤、過期、格式錯誤
+			logger.warn("JWT 驗證失敗：" + e.getMessage());
 			SecurityContextHolder.clearContext();
 		}
 //		交給下一個Filter，驗證 token
