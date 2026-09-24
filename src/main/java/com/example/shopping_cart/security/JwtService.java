@@ -38,7 +38,11 @@ public class JwtService {
 	
 //	產生AccessToken
 	public String generateAccessToken(Integer memberID,String role) {
+//		new Date() 建立一個代表現在時刻的物件
 		Date now= new Date();
+//		now.getTime()，現在時刻的毫秒數（從1970-01-01 00:00:00UTC算起）
+//		+ accessTokenExpiration，加上 900000 毫秒（15分鐘）
+//		new Date(毫秒數)	，用那個毫秒數建立一個新的時間點
 		Date expiry = new Date(now.getTime() + accessTokenExpiration);
 //		開始建立 token
 		return Jwts.builder()
