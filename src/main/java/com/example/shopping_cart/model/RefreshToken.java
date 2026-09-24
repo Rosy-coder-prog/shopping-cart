@@ -67,7 +67,7 @@ public class RefreshToken {
 		this.tokenHash = tokenHash;
 		this.expiresAt = expiresAt;
 	}
-//	命令與查詢分離
+
 //	revoked變成true的方法
 //	作廢是單向的：一旦作廢就不該復原
 	public void revoke() {

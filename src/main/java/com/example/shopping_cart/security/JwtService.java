@@ -36,6 +36,7 @@ public class JwtService {
 		this.accessTokenExpiration=accessTokenExpiration;
 	}
 	
+//	產生AccessToken
 	public String generateAccessToken(Integer memberID,String role) {
 		Date now= new Date();
 		Date expiry = new Date(now.getTime() + accessTokenExpiration);

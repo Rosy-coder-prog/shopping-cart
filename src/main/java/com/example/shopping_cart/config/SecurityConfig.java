@@ -65,6 +65,7 @@ public class SecurityConfig {
 						// 商品前台
 //						未登入的人可以查看商品，那規則就寫成GET可以放行
 						.requestMatchers(HttpMethod.GET, "/api/product/findall", "/api/product/{productID}").permitAll()
+						.requestMatchers("/api/auth/**").permitAll()
 						// 商品後台，** 不管路徑後面接什麼都能匹配到
 //		 hasRole：必須是指定角色才能存取，不指定method，任何method都要 ADMIN（限制的規則寫寬）
 						.requestMatchers("/api/product/add/**","/api/product/update/**","/api/product/delete/**").hasRole("ADMIN")

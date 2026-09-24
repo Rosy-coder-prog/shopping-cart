@@ -6,12 +6,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
-
-
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.example.shopping_cart.exception.BusinessException;
 import com.example.shopping_cart.model.Member;
 import com.example.shopping_cart.model.RefreshToken;
 import com.example.shopping_cart.repository.RefreshTokenRepository;
@@ -32,7 +32,7 @@ public class RefreshTokenService {
 		this.refreshTokenRepository = refreshTokenRepository;
 		this.refreshTokenExpiration =refreshTokenExpiration;
 	}
-	
+//	建立token
 	public String createRefreshToken(Member member) {
 //		int[] numbers = new int[5];   5 個 int 的陣列，初始值全是 0
 //		一個 byte 是 8 bits，32 個 byte = 256 bits，跟SHA-256輸出一樣長
@@ -57,6 +57,52 @@ public class RefreshTokenService {
 //		.encodeToString(bytes) 把 byte 陣列編碼成字串
 		String rawToken = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
 		
+		String tokenHash = hashToken(rawToken);
+
+//		Instant.now()現在，plusMillis 加上毫秒數，refreshTokenExpiration設定擋的值		
+			Instant expiresAt = Instant.now().plusMillis(refreshTokenExpiration);
+			RefreshToken refreshToken = new RefreshToken(member, tokenHash,expiresAt);
+			refreshTokenRepository.save(refreshToken);
+		
+
+        return rawToken;
+	}
+	
+	//驗證token
+	public RefreshToken validateAndRotate(String rawToken) {
+		String tokenHash = hashToken(rawToken);
+		//有沒有這個token
+		RefreshToken token = refreshTokenRepository.findByTokenHash(tokenHash)
+//				找不到丟例外
+				.orElseThrow(() -> new BusinessException(401,"無效的refresh Token"));
+		//有異常登入
+		if(token.isRevoked()) {
+//			查詢有效
+			List<RefreshToken> allTokens=refreshTokenRepository
+					.findByMember_MemberIDAndRevokedFalse(token.getMember().getMemberID());
+			for(RefreshToken t:allTokens) {
+				t.revoke();
+			}
+			refreshTokenRepository.saveAll(allTokens);
+			throw new BusinessException(401,"疑似異常存取，已登出所有裝置" );		
+		}
+		//過期
+		if (token.isExpired()) {
+			throw new BusinessException(401,"登入已過期，請重新登入");
+		}
+		//檢查會員是否停權
+		    Member member = token.getMember();
+		if (!member.getActive()) {
+			throw new BusinessException(403,"會員已停權");
+		}
+//		作廢舊的
+		token.revoke();
+		refreshTokenRepository.save(token);
+		return token;
+	}
+	
+	//共用方法
+	private String hashToken(String rawToken) {
 		try {
 //			MessageDigest	Java 內建的雜湊工具 class
 //			.getInstance("SHA-256")	「給我一個會算 SHA-256 的雜湊工具」
@@ -64,38 +110,33 @@ public class RefreshTokenService {
 			
 //			放進 cookie 的 token
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-/*		getBytes 把字串轉成 byte 陣列，用 UTF-8 編碼規則
+/*	getBytes 把字串轉成 byte 陣列，用 UTF-8 編碼規則
  *  Windows 預設編碼可能不是 UTF-8 ，不指定 UTF-8 ，
  *  可能部署到 Linux 的 Azure 上算的結果不一樣，直接指定同一個規則
 	digest.digest(...)對這個 byte 陣列算 SHA-256，回傳雜湊結果（也是 byte 陣列)用這個雜湊工具，算出雜湊值
-    第二個：SHA-256 的輸出，用來存資料庫，tokenHash（十六進位字串）→ 資料庫
+	第二個：SHA-256 的輸出，用來存資料庫，tokenHash（十六進位字串）→ 資料庫
  */
 			byte[] hash = digest.digest(rawToken.getBytes(StandardCharsets.UTF_8));
 //			StringBuilder 是可以一直拼接的字串容器
 			StringBuilder sb = new StringBuilder();
 			for (byte b : hash) {
-//			%02x：把每個byte轉成2位的十六進位，不足補 0，轉成十六進位，不滿 2 位就前面補
-//				String.format把值按照指定格式轉成字串
-//				sb.append(...)把轉好的 2 個字元加到 StringBuilder 後面
-//				0	不夠位數時用 0 來補，2	最少要 2 位
-//				byte 陣列不能直接存進資料庫的 VARCHAR 欄位。需要一種方式把它表示成純文字	
-//				SHA-256 裡就代表輸出是 256 bits = 32 bytes， 1 Byte 可以拆成 2 個十六進位字元
-//				每個 byte 固定 2 個字元，32 bytes 永遠是 64 字元。資料庫欄位設 VARCHAR(64) 剛剛好
+//	%02x：把每個byte轉成2位的十六進位，不足補 0，轉成十六進位，不滿 2 位就前面補
+//	String.format把值按照指定格式轉成字串
+//	sb.append(...)把轉好的 2 個字元加到 StringBuilder 後面
+//	0	不夠位數時用 0 來補，2	最少要 2 位
+//	byte 陣列不能直接存進資料庫的 VARCHAR 欄位。需要一種方式把它表示成純文字	
+//	SHA-256 裡就代表輸出是 256 bits = 32 bytes， 1 Byte 可以拆成 2 個十六進位字元
+//	每個 byte 固定 2 個字元，32 bytes 永遠是 64 字元。資料庫欄位設 VARCHAR(64) 剛剛好
 				sb.append(String.format("%02x", b));
 			}
 //			toString() 是產生一個新的 String 物件
 //			把它目前的內容複製成一個 String 回傳
 			
-//			 存進 RefreshToken 物件 ────→ 存進資料庫
-			String tokenHash = sb.toString();
-			Instant expiresAt = Instant.now().plusMillis(refreshTokenExpiration);
-			RefreshToken refreshToken = new RefreshToken(member, tokenHash,expiresAt);
-			refreshTokenRepository.save(refreshToken);
+//			 存進 RefreshToken 物件 → 存進資料庫
+			return sb.toString();
 		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException(e);			
+			throw new RuntimeException(e);
 		}
-//		Instant.now()現在，plusMillis 加上毫秒數，refreshTokenExpiration設定擋的值		
-        return rawToken;
 	}
 }
 /*
