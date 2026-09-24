@@ -12,19 +12,30 @@ import com.example.shopping_cart.exception.BusinessException;
 import com.example.shopping_cart.model.Member;
 import com.example.shopping_cart.repository.MemberRepository;
 import com.example.shopping_cart.security.JwtService;
+import com.example.shopping_cart.security.RefreshTokenService;
 
 @Service
 public class MemberService implements IMemberService {
 	
 //	private final注入後不能被改
+	/*
+	 * 用final不讓值被改
+	 * 可以不用資料庫就單元測試
+	 * 沒賦值就會報錯
+	 */
 	private final MemberRepository memberRepository;
 	private final JwtService jwtService;
 	private final PasswordEncoder passwordEncoder;
+	private final RefreshTokenService refreshTokenService;
 	
-    public MemberService(MemberRepository memberRepository, JwtService jwtService,PasswordEncoder passwordEncoder) {
+    public MemberService(MemberRepository memberRepository,
+    		             JwtService jwtService,
+    		             PasswordEncoder passwordEncoder,
+    		             RefreshTokenService refreshTokenService) {
     	this.memberRepository =memberRepository;
     	this.jwtService =jwtService; 
     	this.passwordEncoder=passwordEncoder;
+    	this.refreshTokenService=refreshTokenService;
     }
 	
 	
@@ -37,6 +48,13 @@ public class MemberService implements IMemberService {
 //		存在擋掉
 		if(result.isPresent()) {
 			throw new BusinessException(409,"信箱已被註冊");
+		}
+//		暱稱錯誤排除
+//		擋住壞的用 ||：是這個或那個 → 擋，放行好的用 &&：是這個而且那個 → 放
+//		&&是要兩個都是true才會執行，代表出現空白或空字串就會被放行
+//		null 檢查永遠放左邊，左邊 == null 是 true，|| 已經確定整個結果是 true，右邊不執行
+		if(membername == null || membername.isBlank()) {
+			throw new BusinessException(400,"會員名稱不能為空");
 		}
 		
 //		建立一個Member物件取值
@@ -89,8 +107,9 @@ public class MemberService implements IMemberService {
 		MemberResponseDTO memberResponseDTO = new MemberResponseDTO(member.getMemberID(),
 				member.getMembername(),member.getRole());	
 		
+		String rawRefreshToken = refreshTokenService.createRefreshToken(member);
 //		傳給前端，只傳需要的值
-		return new LoginResponseDTO(accessToken,memberResponseDTO);
+		return new LoginResponseDTO(accessToken,memberResponseDTO,rawRefreshToken);
 				
 				
 		
