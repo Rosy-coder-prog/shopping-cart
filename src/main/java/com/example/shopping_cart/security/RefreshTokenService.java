@@ -7,6 +7,7 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -99,6 +100,19 @@ public class RefreshTokenService {
 		token.revoke();
 		refreshTokenRepository.save(token);
 		return token;
+	}
+	
+	//登出
+	public void revokeByRawToken(String rawToken) {
+		String tokenHash = hashToken(rawToken);
+		Optional <RefreshToken> result = refreshTokenRepository.findByTokenHash(tokenHash);
+	    if (result.isPresent()) {
+	    	RefreshToken token = result.get();
+	    	token.revoke();
+	    	refreshTokenRepository.save(token);
+		}
+		
+		
 	}
 	
 	//共用方法

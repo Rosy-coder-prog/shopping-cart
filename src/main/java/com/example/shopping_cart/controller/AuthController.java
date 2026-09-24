@@ -34,6 +34,7 @@ public class AuthController {
 		this.iMemberService = iMemberService;
 	}
 	
+	
 	@PostMapping("/refresh")
 //	request 讀 cookie、response 寫新的 cookie
 	public LoginResponseDTO refresh(HttpServletRequest request,HttpServletResponse response) {
@@ -72,6 +73,8 @@ public class AuthController {
 		
 	}
 	
-	
+	//登出
+	@PostMapping("/api/auth/logout")
+	public
 	
 }
