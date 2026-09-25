@@ -74,7 +74,41 @@ public class AuthController {
 	}
 	
 	//登出
-	@PostMapping("/api/auth/logout")
-	public
+	@PostMapping("/logout")
+//	HttpServletRequest request，Cookie/Authorization/Content-Type/Body
+	public void logout(HttpServletRequest request,HttpServletResponse response) {
+//		從 cookie 取出 rawToken
+//		Cookie: refreshToken=Uu8pAwK3N7x...
+//		        ↑ 名稱        ↑ 值（rawToken）
+		String rawToken = null;
+		Cookie[] cookies = request.getCookies();
+		if(cookies != null) {
+			for(Cookie cookie : cookies) {
+				if("refreshToken".equals(cookie.getName())) {
+					rawToken = cookie.getValue();
+				}
+			}
+		}
+		if(rawToken == null) {
+			throw new BusinessException(401, "未提供refresh token");
+		}
+
+
+		 refreshTokenService.revokeByRawToken(rawToken);
+		 
+//		 HTTP沒有「刪除cookie」的指令，只能用「設一個同名的、已過期的 cookie」來覆蓋
+		 Cookie cookie = new Cookie("refreshToken",null);
+		 /*
+		 建立一個新的 Cookie 物件去覆蓋舊的。如果新的沒設 HttpOnly，
+		 而舊的有，瀏覽器會當成兩個不同的 cookie（屬性不同），舊的就刪不掉
+		 */
+//		 只有我（瀏覽器）能用，禁止 JS 存取
+		 cookie.setHttpOnly(true);
+//		 登入和登出路徑都一樣，這樣不會被當成另一個cookie
+		 cookie.setPath("/api/auth");
+//		 0登出時立刻刪除
+		 cookie.setMaxAge(0);
+		 response.addCookie(cookie);
+	}
 	
 }

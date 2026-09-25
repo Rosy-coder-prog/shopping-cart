@@ -26,11 +26,14 @@ public class Orders {
 	@JoinColumn(name = "memberID")
 	private Member member; //關連到關聯到另一張表，應該是Member物件
 	
+	//總額
 	@Column(name ="amount")
 	private BigDecimal amount;
 	
+	//訂單狀態
 	@Column(name = "order_status")
 	private String orderStatus; //存的是文字（「處理中」「已完成」
+	
 	
 	@Column(name ="order_time")
 	private LocalDateTime orderTime; //當下時間

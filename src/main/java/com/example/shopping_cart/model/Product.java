@@ -23,12 +23,14 @@ public class Product {
 	@Column(name="deleted")
 	private Boolean deleted =false;
 	
+	
 	@Column(name = "productname")
 	private String productname;
 	
 	@Column(name = "price")
 	private BigDecimal price;
 	
+//	庫存數量
 	@Column(name = "inventory_quantity")
 	private Integer inventoryQuantity;
 	

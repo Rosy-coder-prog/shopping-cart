@@ -12,18 +12,22 @@ import jakarta.persistence.Table;
 @Table(name = "Cart")
 public class Cart {
 	
+//	購物車+商品
 	@EmbeddedId //兩個欄位組成的主鍵
 	private CartId cartId;
 	
+//	會員物件
 	@ManyToOne
 	//只是查資料的，不要重複管這個欄位
 	@JoinColumn( name = "memberID",insertable = false, updatable = false )
 	private Member member;
 	
+//	商品物件
 	@ManyToOne
 	@JoinColumn( name = "productID",insertable = false,updatable = false)
 	private Product product;
 	
+//	購物車商品數量
 	@Column(name = "cart_quantity")
 	private Integer cartQuantity;
 	

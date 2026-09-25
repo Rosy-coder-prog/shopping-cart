@@ -115,6 +115,7 @@ public class RefreshTokenService {
 		
 	}
 	
+//	SHA-256 的十六進位字串（tokenHash）
 	//共用方法
 	private String hashToken(String rawToken) {
 		try {

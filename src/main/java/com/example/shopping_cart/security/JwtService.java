@@ -94,7 +94,7 @@ public class JwtService {
 	}
 	
 	public String getRole(String token) {
-//		get("role", String.class) 取自訂欄位。第二個參數告訴 jjwt「我預期這是 String」，
+//		get("role", String.class) 取自訂欄位。第二個參數告訴 jwt「我預期這是 String」，
 //		型別不符會拋例外。如果用沒有型別參數的 get("role")，回傳的是 Object，還要自己轉型
 		return parseToken(token).get(CLAIM_ROLE,String.class);
 	}

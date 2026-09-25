@@ -12,20 +12,25 @@ import jakarta.persistence.Table;
 @Table(name = "Order_item")
 public class OrderItem {
 	
+//	訂單+商品
 	@EmbeddedId
 	private OrderItemId orderItemId;
 	
+	//訂單
 	@ManyToOne
 	@JoinColumn(name = "orderID",insertable = false, updatable = false )
 	private Orders orders;
 	
+	//商品物件
 	@ManyToOne
 	@JoinColumn(name = "productID",insertable = false,updatable = false)
 	private Product product;
 	
+	//訂單的數量
 	@Column(name = "order_quantity")
 	private Integer orderQuantity;
 	
+	//當時的價格
 	@Column(name = "purchase_price")
 	private BigDecimal purchasePrice;
 	
