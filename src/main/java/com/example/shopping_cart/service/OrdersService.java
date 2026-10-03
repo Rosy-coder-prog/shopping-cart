@@ -99,7 +99,8 @@ public class OrdersService implements IOrdersService {
 //		購物車的東西一個一個拿出來，檢查庫存->扣庫存->建立訂單明細->計算總價格
 		for (Cart cart : checkcart) {
 			Product product = cart.getProduct();
-			if(!product.getDeleted()) {
+//			deleted=true代表已下架
+			if(product.getDeleted()) {
 				throw new BusinessException(404,product.getProductname()+"商品已下架");
 			}
 

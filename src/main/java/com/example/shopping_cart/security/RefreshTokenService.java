@@ -17,6 +17,8 @@ import com.example.shopping_cart.model.Member;
 import com.example.shopping_cart.model.RefreshToken;
 import com.example.shopping_cart.repository.RefreshTokenRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class RefreshTokenService {
 
@@ -110,11 +112,16 @@ public class RefreshTokenService {
 	    	RefreshToken token = result.get();
 	    	token.revoke();
 	    	refreshTokenRepository.save(token);
-		}
-		
-		
+		}		
 	}
 	
+	//刪除過期Token
+	@Transactional
+    public void cleanUpExpiredToken() {
+    	refreshTokenRepository.deleteByExpiresAtBefore(Instant.now());
+    }
+    
+    
 //	SHA-256 的十六進位字串（tokenHash）
 	//共用方法
 	private String hashToken(String rawToken) {

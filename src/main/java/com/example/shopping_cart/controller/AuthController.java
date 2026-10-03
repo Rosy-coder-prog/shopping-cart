@@ -34,7 +34,7 @@ public class AuthController {
 		this.iMemberService = iMemberService;
 	}
 	
-	
+	//換發token
 	@PostMapping("/refresh")
 //	request 讀 cookie、response 寫新的 cookie
 	public LoginResponseDTO refresh(HttpServletRequest request,HttpServletResponse response) {
@@ -97,6 +97,7 @@ public class AuthController {
 		 refreshTokenService.revokeByRawToken(rawToken);
 		 
 //		 HTTP沒有「刪除cookie」的指令，只能用「設一個同名的、已過期的 cookie」來覆蓋
+//		                               名稱         值
 		 Cookie cookie = new Cookie("refreshToken",null);
 		 /*
 		 建立一個新的 Cookie 物件去覆蓋舊的。如果新的沒設 HttpOnly，

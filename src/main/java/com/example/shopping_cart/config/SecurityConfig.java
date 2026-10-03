@@ -18,6 +18,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.example.shopping_cart.security.JwtFilter;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -72,8 +74,21 @@ public class SecurityConfig {
 						.requestMatchers("/api/admin/**").hasRole("ADMIN")
 //		.anyRequest().authenticated()上面規則都沒匹配到的所有其他請求，只要已登入就能存取，不管角色
 //		購物車和訂單不需要寫，下面程式碼自動變成「需要登入」
+//						authenticated → 剩下全部，沒寫到的都在這
 						.anyRequest().authenticated()
 
+				);
+		
+//		exceptionHandling(...)	設定Security的例外處理
+		http.exceptionHandling(ex -> ex
+//				authenticationEntryPoint(...)「未登入時怎麼回應」
+//				(request, response, authException) -> { ... }	lambda，自己寫回應內容
+				.authenticationEntryPoint((request,response,authException) ->{
+//					SC_UNAUTHORIZED	是 401
+					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+					response.setContentType("application/json;charset=UTF-8");
+					response.getWriter().write("{\"code\":401,\"message\":\"未登入\"}");
+				})
 				);
 //		把 A 插在 B 之前
 //它是 Spring Security 處理表單登入的 Filter(SecurityConfig 裡當定位點)，位置在授權檢查之前。插在它前面，就能確保順序		
